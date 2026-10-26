@@ -36,8 +36,8 @@
     }
   }
 
-  // apiBase：插件 iframe 与前端/后端同源加载（App.vue pluginsData 用页面 origin 拼 URL），直接同源取即可
-  const apiBase = window.location.origin
+  // apiBase：config.js 可配置（独立安装到 DS 时填后端地址）；留空取同源（内置注入式）
+  const apiBase = window.OO_API_BASE || window.location.origin
   dbg('plugin.js v11 (dsh) 加载')
 
   // 兜底：iframe 可能丢 query 或后端尚未登记会话，从后端查活跃 session（15s 节流重试）

@@ -42,8 +42,9 @@
     }
   }
 
-  // === apiBase 多候选探测 ===
+  // === apiBase 多候选探测：config.js 配置优先，其次同源/常规端口 ===
   const candidates = [...new Set([
+    ...(window.OO_API_BASE ? [window.OO_API_BASE] : []),
     location.protocol + '//' + location.hostname + ':8090',
     'http://localhost:8090',
     'http://127.0.0.1:8090',

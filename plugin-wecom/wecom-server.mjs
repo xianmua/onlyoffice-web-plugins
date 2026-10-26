@@ -1,4 +1,4 @@
-// 企微登录后端（归属聊天插件 plugin-chat，为聊天/协同提供真实 userid+姓名身份）
+// 企微登录后端（归属 plugin-wecom，为聊天/协同提供真实 userid+姓名身份）
 // 可选功能，非门禁：WECOM_CORP_ID / WECOM_AGENT_ID / WECOM_SECRET
 // 三项齐全才启用；WECOM_MOCK=1 为无凭据本地/e2e 验证开关（不出站，authorize 直接弹回假 code）。
 // 授权走独立弹窗：插件 iframe window.open authorize → 企微扫码/静默授权 → 弹回
@@ -94,7 +94,7 @@ const CALLBACK_HTML = `<!DOCTYPE html>
 })()
 </script></body></html>`
 
-// 供其他插件（如 plugin-chat）复用：按请求 cookie 取当前登录身份，未登录/过期返回 null
+// 供其他插件复用：按请求 cookie 取当前登录身份，未登录/过期返回 null
 export function getSessionUser(req) {
   const sid = parseCookies(req).oo_sid
   const s = sid && sessions.get(sid)

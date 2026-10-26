@@ -5,7 +5,8 @@
 // 主页面 F5 后以真实姓名协同）。
 // 文档 id：优先 iframe query 的 session，兜底 GET /api/session（App.vue 登记的当前 f）。
 (function () {
-  const apiBase = window.location.origin
+  // apiBase：config.js 可配置（独立安装到 DS 时填后端地址）；留空取同源（内置注入式）
+  const apiBase = window.OO_API_BASE || window.location.origin
   const $ = function (id) { return document.getElementById(id) }
   const msgsEl = $('msgs'), emptyEl = $('empty'), whoEl = $('whoName'), logoutBtn = $('logoutBtn')
   const authbarEl = $('authbar'), authTipEl = $('authTip'), loginBtn = $('loginBtn')
@@ -71,7 +72,7 @@
 
   async function poll() {
     try {
-      const r = await (await fetch(apiBase + '/api/chat/messages?f=' + encodeURIComponent(f) + '&after=' + seq, { cache: 'no-store' })).json()
+      const r = await (await fetch(apiBase + '/api/chat/messages?f=' + encodeURIComponent(f) + '&after=' + seq, { cache: 'no-store', credentials: 'include' })).json()
       if (!r.ok) return
       const prev = authed
       authed = !!r.authed
@@ -94,7 +95,7 @@
     sending = true; sendBtn.disabled = true
     try {
       const r = await (await fetch(apiBase + '/api/chat/send?f=' + encodeURIComponent(f), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }), credentials: 'include',
       })).json()
       if (r.ok) {
         inputEl.value = ''
