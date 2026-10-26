@@ -8,7 +8,7 @@ ONLYOFFICE Document Server 插件集，符合官方插件规范（guid / version
 |---|---|---|
 | plugin-ai | AI 助手：选中文本发送 AI 处理并写回文档 | 有（AI API 代理） |
 | plugin-dsh | DSH AI：调用本地 DSH 服务在文档中写入回复 | 有（127.0.0.1:3080） |
-| plugin-chat | 聊天面板：按文档分房间的协同讨论 + 企微登录身份 | 有（聊天落盘 + 企微 OAuth） |
+| plugin-wecom | 企微面板：按文档分房间的协同讨论 + 企微登录身份 | 有（聊天落盘 + 企微 OAuth） |
 
 > 注：三个插件均依赖配套后端提供 API。单独安装后插件 UI 可正常加载，但业务功能需自行对接后端。
 
