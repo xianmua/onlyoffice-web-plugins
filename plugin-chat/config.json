@@ -1,0 +1,48 @@
+{
+  "name": "聊天",
+  "nameLocale": {
+    "en": "Chat"
+  },
+  "guid": "asc.{9C4E2F70-8D1A-4B6E-A5C3-000000000004}",
+  "version": "1.0.0",
+  "group": { "name": "聊天", "rank": 3 },
+  "variations": [
+    {
+      "description": "文档内多人讨论：消息存服务器，企微登录身份发言（未登录只读）",
+      "url": "index.html",
+      "isViewer": true,
+      "EditorsSupport": ["word", "cell", "slide"],
+      "isVisual": true,
+      "isModal": false,
+      "isInsideMode": true,
+      "isSystem": false,
+      "initDataType": "none",
+      "initData": "",
+      "isUpdateOleOnResize": false,
+      "size": [360, 560],
+      "buttons": [],
+      "icons": ["resources/light/icon.png"],
+      "icons2": [
+        {
+          "style": "light",
+          "100%": { "normal": "resources/light/icon.png" },
+          "125%": { "normal": "resources/light/icon@1.25x.png" },
+          "150%": { "normal": "resources/light/icon@1.5x.png" },
+          "175%": { "normal": "resources/light/icon@1.75x.png" },
+          "200%": { "normal": "resources/light/icon@2x.png" },
+          "*": { "normal": "resources/light/icon.svg" }
+        },
+        {
+          "style": "dark",
+          "100%": { "normal": "resources/dark/icon.png" },
+          "125%": { "normal": "resources/dark/icon@1.25x.png" },
+          "150%": { "normal": "resources/dark/icon@1.5x.png" },
+          "175%": { "normal": "resources/dark/icon@1.75x.png" },
+          "200%": { "normal": "resources/dark/icon@2x.png" },
+          "*": { "normal": "resources/dark/icon.svg" }
+        }
+      ],
+      "Events": ["init"]
+    }
+  ]
+}

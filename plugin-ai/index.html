@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>AI 助手</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; display: flex; flex-direction: column;
+      font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px;
+      background: #fff; color: #333;
+    }
+    /* 深色主题（OnlyOffice 编辑器为暗色时由 plugin.js 切换） */
+    body.dark {
+      background: #2d2f31 !important; color: #e8eaed !important;
+    }
+    #msgs { flex: 1; overflow-y: auto; padding: 10px 12px; }
+    .msg { margin-bottom: 8px; }
+    .msg .bubble { padding: 6px 10px; border-radius: 10px; white-space: pre-wrap; word-break: break-word; line-height: 1.55; }
+    .msg.user { text-align: right; }
+    .msg.user .bubble { background: #4f6ef7; color: #fff !important; display: inline-block; }
+    .msg.ai .bubble { background: #f3f4f6; color: #333 !important; display: inline-block; }
+    body.dark .msg.ai .bubble { background: #40444b; color: #e8eaed !important; }
+    .msg.err .bubble { background: #5c2a2e; color: #ffb4b6 !important; display: inline-block; }
+    /* 思考中：三个跳动小点，回复到达后原地替换（keyframes 用独立命名，避免与 OnlyOffice 注入样式冲突） */
+    .bubble.typing { display: inline-flex; gap: 4px; align-items: center; padding: 10px 12px; }
+    .bubble.typing span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #9aa0a6; animation: aiDotBlink 1.2s infinite ease-in-out; }
+    .bubble.typing span:nth-child(2) { animation-delay: .2s; }
+    .bubble.typing span:nth-child(3) { animation-delay: .4s; }
+    @keyframes aiDotBlink { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+    /* 思考块（DSH 面板同款）：单行「思考 · 最新进度」，点击展开全部 */
+    .think { margin: 0 24px 10px 10px; }
+    .think-line { font-size: 12px; color: #9aa0aa; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .think-line:hover { color: #b9bfca; }
+    .think-cur { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+    .spin {
+      flex: none; width: 11px; height: 11px; border-radius: 50%;
+      border: 2px solid #565b63; border-top-color: #a78bfa;
+      animation: thinkspin .9s linear infinite;
+    }
+    @keyframes thinkspin { to { transform: rotate(360deg); } }
+    .think-all {
+      margin-top: 6px; max-height: 200px; overflow-y: auto;
+      font-size: 11px; color: #8a8f98; line-height: 1.6;
+      white-space: pre-wrap; word-break: break-all;
+      border-left: 2px solid rgba(128, 128, 128, 0.3); padding-left: 9px;
+    }
+    #msgs::-webkit-scrollbar, #inp::-webkit-scrollbar, .think-all::-webkit-scrollbar { width: 6px; }
+    #msgs::-webkit-scrollbar-thumb, #inp::-webkit-scrollbar-thumb, .think-all::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    body.dark #msgs::-webkit-scrollbar-thumb, body.dark #inp::-webkit-scrollbar-thumb, body.dark .think-all::-webkit-scrollbar-thumb { background: #4a4d52; }
+    #form { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid #e5e7eb; align-items: flex-end; }
+    body.dark #form { border-top-color: #4a4d52; }
+    #inp { flex: 1; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 8px; font-size: 13px; outline: none; background: #fff; color: #333; resize: none; font-family: inherit; line-height: 1.4; overflow-y: hidden; }
+    #inp:focus { border-color: #4f6ef7; }
+    body.dark #inp { background: #40444b; color: #e8eaed; border-color: #5a5e66; }
+    #send { border: 0; border-radius: 6px; background: #4f6ef7; color: #fff; padding: 6px 14px; cursor: pointer; }
+    #send:disabled { background: #8a97d8; cursor: default; }
+    #topbar { padding: 3px 12px; font-size: 11px; color: #8a8f98; display: flex; justify-content: space-between; align-items: center; }
+    #gear { margin-left: auto; }  /* status 隐藏时齿轮仍靠右 */
+    body.dark #topbar { color: #8a8f98; }
+    #status.busy { color: #a78bfa; }
+    #status.done { color: #6ee7a0; }
+    #status.err  { color: #ff8a8e; }
+    /* 设置入口 */
+    #gear { border: 0; background: none; cursor: pointer; color: #8a8f98; padding: 2px; opacity: .8; display: flex; }
+    #gear:hover { opacity: 1; color: #a78bfa; }
+    /* 设置视图 */
+    #settings { flex: 1; overflow-y: auto; padding: 12px; display: none; flex-direction: column; gap: 10px; }
+    #settings .field label { display: block; font-size: 11px; color: #8a8f98; margin-bottom: 3px; }
+    #settings input, #settings textarea {
+      width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 8px;
+      font-size: 12px; font-family: inherit; outline: none; background: #fff; color: #333; resize: vertical;
+    }
+    #settings input:focus, #settings textarea:focus { border-color: #4f6ef7; }
+    body.dark #settings input, body.dark #settings textarea { background: #40444b; color: #e8eaed; border-color: #5a5e66; }
+    #settings .tip { font-size: 10px; color: #8a8f98; margin-top: 2px; }
+    #settings .btns { display: flex; gap: 8px; margin-top: 4px; }
+    #settings .btns button { flex: 1; border: 0; border-radius: 6px; padding: 7px 0; cursor: pointer; font-size: 12px; }
+    #setSave { background: #4f6ef7; color: #fff; }
+    #setBack { background: #4a4d52; color: #e8eaed; }
+    /* 细滚动条（浅色/深色） */
+    #msgs::-webkit-scrollbar, #inp::-webkit-scrollbar { width: 6px; }
+    #msgs::-webkit-scrollbar-thumb, #inp::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    #msgs::-webkit-scrollbar-track, #inp::-webkit-scrollbar-track { background: transparent; }
+    body.dark #msgs::-webkit-scrollbar-thumb, body.dark #inp::-webkit-scrollbar-thumb { background: #4a4d52; }
+    .msg .bubble { text-align: left; }
+    /* 回复元信息行：左（复制+点赞）右（耗时）两端对齐 */
+    .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 3px; font-size: 11px; color: #8a8f98; }
+    .meta .left { display: flex; gap: 10px; }
+    .meta .copy, .meta .like { cursor: pointer; user-select: none; opacity: .75; }
+    .meta .copy:hover, .meta .like:hover { opacity: 1; color: #a78bfa; }
+    .meta .like.liked { color: #f59e0b; opacity: 1; }
+    .meta .like svg { display: block; }
+  </style>
+  <!-- OnlyOffice 插件 SDK：用编辑器同源的本地路径，不依赖外网 -->
+  <script src="/sdkjs-plugins/v1/plugins.js"></script>
+</head>
+<body>
+  <div id="topbar">
+    <span id="status" class="idle" style="display:none">待命</span>
+    <button id="gear" title="设置">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+  <div id="chat" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <div id="msgs"></div>
+    <form id="form">
+      <textarea id="inp" placeholder="输入修改指令..." rows="1"></textarea>
+      <button id="send" type="submit">发送</button>
+    </form>
+  </div>
+  <div id="settings">
+    <div class="field">
+      <label>运行状态</label>
+      <span id="status2" class="idle">待命</span>
+    </div>
+    <div class="field">
+      <label>API 地址（留空用服务器默认）</label>
+      <input id="setApiUrl" placeholder="https://.../v1" />
+    </div>
+    <div class="field">
+      <label>API Key（留空不改，仅掩码显示）</label>
+      <input id="setKey" type="password" placeholder="" />
+      <div class="tip" id="keyTip"></div>
+    </div>
+    <div class="field">
+      <label>模型（留空用服务器默认）</label>
+      <input id="setModel" placeholder="deepseek-chat" />
+    </div>
+    <div class="field">
+      <label>附加提示词（拼在系统提示词后，留空不附加）</label>
+      <textarea id="setPrompt" rows="5" placeholder="例如：回复用中文；写入内容保持商务语气…"></textarea>
+    </div>
+    <div class="btns">
+      <button id="setSave" type="button">保存</button>
+      <button id="setBack" type="button">返回</button>
+    </div>
+  </div>
+  <script src="plugin.js?v=28"></script>
+</body>
+</html>

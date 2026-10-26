@@ -1,0 +1,49 @@
+{
+  "name": "DSH AI",
+  "nameLocale": {
+    "en": "DSH AI"
+  },
+  "guid": "asc.{55BA7070-469A-444D-A99B-1ADBD4DA7631}",
+  "version": "1.0.0",
+  "group": { "name": "DSH AI", "rank": 2 },
+  "variations": [
+    {
+      "description": "DSH AI：本地 DSH 服务（127.0.0.1:3080），在文档中写入回复",
+      "url": "index.html",
+      "isViewer": false,
+      "EditorsSupport": ["word"],
+      "isVisual": true,
+      "isModal": false,
+      "isInsideMode": true,
+      "isSystem": false,
+      "initDataType": "none",
+      "initData": "",
+      "isUpdateOleOnResize": false,
+      "buttons": [
+        { "text": "DSH AI" }
+      ],
+      "icons": ["resources/light/icon.png"],
+      "icons2": [
+        {
+          "style": "light",
+          "100%": { "normal": "resources/light/icon.png" },
+          "125%": { "normal": "resources/light/icon@1.25x.png" },
+          "150%": { "normal": "resources/light/icon@1.5x.png" },
+          "175%": { "normal": "resources/light/icon@1.75x.png" },
+          "200%": { "normal": "resources/light/icon@2x.png" },
+          "*": { "normal": "resources/light/icon.svg" }
+        },
+        {
+          "style": "dark",
+          "100%": { "normal": "resources/dark/icon.png" },
+          "125%": { "normal": "resources/dark/icon@1.25x.png" },
+          "150%": { "normal": "resources/dark/icon@1.5x.png" },
+          "175%": { "normal": "resources/dark/icon@1.75x.png" },
+          "200%": { "normal": "resources/dark/icon@2x.png" },
+          "*": { "normal": "resources/dark/icon.svg" }
+        }
+      ],
+      "Events": ["init"]
+    }
+  ]
+}
